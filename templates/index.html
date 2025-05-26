@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Activity Checker</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #fafafa;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: #262626;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #262626;
+            font-weight: 500;
+        }
+
+        .input-help {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        input[type=text],
+        input[type=password] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dbdbdb;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type=text]:focus,
+        input[type=password]:focus {
+            border-color: #0095f6;
+            outline: none;
+        }
+
+        .file-upload {
+            border: 2px dashed #dbdbdb;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #0095f6;
+        }
+
+        .file-upload input[type=file] {
+            display: none;
+        }
+
+        .file-label {
+            color: #0095f6;
+            font-weight: 500;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #1877f2;
+        }
+
+        button:disabled {
+            background: #b2dffc;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading .spinner {
+            display: inline-block;
+        }
+
+        .error-message {
+            color: #ed4956;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .progress-text {
+            color: #262626;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #dbdbdb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0095f6;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Instagram Activity Checker</h2>
+        <div class="form-container">
+            <form id="checkForm" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="username">Instagram Username</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Enter your Instagram username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Instagram Password</label>
+                    <input type="password" id="password" name="password" required
+                           placeholder="Enter your Instagram password">
+                    <div class="input-help">Your credentials are only used to access Instagram and are never stored.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Upload Lead List (Excel file)</label>
+                    <div class="file-upload" id="dropZone">
+                        <input type="file" id="leads" name="leads" accept=".xlsx,.xls" required>
+                        <div class="file-label">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <p>Click to upload or drag and drop your Excel file</p>
+                        </div>
+                        <div class="input-help">
+                            Excel file should contain usernames in a column named "userName" or "Username".<br>
+                            The file can contain other columns as well.
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn">
+                    Check Activity
+                    <span class="spinner"></span>
+                </button>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-text">Checking accounts: <span id="progressText">0/0</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('checkForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('leads');
+        const errorMessage = document.getElementById('errorMessage');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressText = document.getElementById('progressText');
+        const progressFill = document.getElementById('progressFill');
+
+        // Handle drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#0095f6';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dbdbdb';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dbdbdb';
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileName();
+            }
+        });
+
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', updateFileName);
+
+        function updateFileName() {
+            const fileName = fileInput.files[0]?.name;
+            if (fileName) {
+                dropZone.querySelector('p').textContent = fileName;
+            }
+        }
+
+        form.addEventListener('submit', (e) => {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            progressContainer.style.display = 'block';
+            errorMessage.style.display = 'none';
+        });
+
+        // Listen for progress updates from the server
+        const eventSource = new EventSource('/progress');
+        eventSource.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            progressText.textContent = `${data.current}/${data.total}`;
+            progressFill.style.width = `${(data.current / data.total) * 100}%`;
+            
+            if (data.current === data.total) {
+                eventSource.close();
+            }
+        };
+    </script>
+</body>
+</html>
