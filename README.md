@@ -48,7 +48,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-2. Open your web browser and navigate to `http://localhost:5000`
+2. Open your web browser and navigate to `http://127.0.0.1:8080`
 
 3. Prepare your Excel file with Instagram usernames (supported column names: userName, Username, username, user_name, User Name, Instagram Username)
 
